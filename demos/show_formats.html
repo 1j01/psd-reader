@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Parse all Photoshop PSD formats</title>
+	<style>
+		body {background:#888;margin:2px 0 0 3px}
+		.psd {background:#ddd;display:inline-block;width:180px;margin:0 4px 4px 0;padding:4px}
+		.psd > p {font:bold 14px sans-serif;padding:4px;margin:0;box-sizing: border-box}
+		.psd > div {margin:4px;font:12px monospace;white-space: pre}
+		#loader {
+			position:fixed;
+			left:0;
+			top:0;
+			width:100%;
+			padding:10px 0;
+			box-sizing: border-box;
+			font:10px sans-serif;
+			color:#fff;
+			z-index:1000;
+			}
+		#loader>div {
+			margin:0;
+			box-sizing: border-box;
+			border:#99f;
+			background:#77f;
+			width:0;
+			padding:3px 0;
+			}
+		a {
+			display:block;
+			position:fixed;
+			right:24px;
+			bottom:24px;
+			color:#000;
+			font:bold 18px sans-serif;
+			background:rgba(200,200,200,0.7);
+			padding:10px 16px;
+			border-radius: 6px;
+			font-weight:normal;
+			text-decoration: none;
+			}
+	</style>
+</head>
+<body>
+
+<div id="loader"><div id="prog"></div>Loading files from the network before parsing...</div>
+<div id="files"></div>
+<a href="https://github.com/epistemex/psd-reader">→ Download from GitHub</a>
+
+<script src="../dist/psd-reader.min.js"></script>
+<script>
+
+var files = [
+	    "RGB8",
+	    "RGB16",
+	    "RGB32",
+	    "RGBA8",
+	    "RGBA16",
+	    "RGBA32",
+		"bitmap",
+	    "CMYK8",
+	    "CMYK16",
+		"CMYKA8",
+	    "CMYKA16",
+	    "DUO8A",
+	    "TRI8A",
+	    "QUAD8A",
+		"G8",
+	    "G16",
+	    "G32",
+		"GA8",
+	    "GA16",
+	    "GA32",
+		"indexed32",
+		"Indexed32T",
+		"Indexed256T",
+	    "LAB8",
+	    "LAB16",
+		"LABA8",
+	    "LABA16",
+	    "MultiChannel"
+	],
+    psds = [],
+	count = files.length, i = 0, loaded = 0,
+    filesDiv = document.getElementById("files"),
+    progCont = document.getElementById("loader"),
+    prog = document.getElementById("prog");
+
+	// load files in bulks to avoid errors with XML requests
+	function next() {
+		if (i < count) psds.push(new LoadPSD(files[i++]));
+		if (i < count) psds.push(new LoadPSD(files[i++]));
+		if (i < count) psds.push(new LoadPSD(files[i++]));
+		if (i < count) psds.push(new LoadPSD(files[i++]));
+		if (i < count) psds.push(new LoadPSD(files[i++]));
+		if (i < count) psds.push(new LoadPSD(files[i++]));
+	}
+	next(); // invoke first bulk
+
+	/*
+	This is called whe the buffer has been loaded, but before parsing.
+	Since we use passive mode in this demo, we have to invoke parsing
+	manually.
+	 */
+	function onready() {
+		loaded++;
+		prog.style.width = (loaded / count * 100) + "%";
+		if (loaded === count) {                 // start parsing when all files has loaded
+			var t = 0, len = psds.length;
+			progCont.style.display = "none";
+			while(t < len) psds[t++].parse();
+		}
+		else if (loaded === i) {                // bulk loaded? load next bulk
+			next();
+		}
+	}
+
+	function LoadPSD(url) {
+
+		var psd = new PsdReader({
+			    url:"gfx/epistemex_" + url + ".psd",
+			    passive: true,                  // use passive mode so we get loaded in order
+			    onload: onload,
+				onready: onready,               // to keep track of loads before manual parsing
+			    onerror: error,
+				ignoreAlpha: false
+		    }),
+		    div = document.createElement("div");
+
+		filesDiv.appendChild(div);
+
+		this.parse = function() {               // expose this instance's parse method
+			psd.parse();
+		};
+
+		function onload() {
+			var canvas = psd.toCanvas(),        // convert to canvas, build rest of the tile:
+				p = document.createElement("p"),
+				info = document.createElement("div");
+
+			div.className = "psd";
+
+			info.innerHTML = "Width   : " + psd.info.width +
+					"<br>Height  : " + psd.info.height +
+					"<br>Depth   : " + psd.info.depth +
+					"<br>Mode    : " + psd.info.colorDesc +
+					(psd.info.indexes ? " (" + psd.info.indexes + ")" : "") +
+					"<br>Compr.  : " + psd.info.compressionDesc +
+					"<br>Channels: " + psd.info.channels;
+
+			p.innerHTML = url;
+			div.appendChild(p);
+			div.appendChild(canvas);
+			div.appendChild(info);
+
+		}
+	}
+
+	function error(e) {console.log(e)}
+
+</script>
+</body>
+</html>

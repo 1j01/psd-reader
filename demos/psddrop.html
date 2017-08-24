@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>PSD drop</title>
+	<link rel="stylesheet" href="css/drop.css" type="text/css">
+</head>
+<body>
+	<canvas></canvas>
+	<div id="info"></div>
+	<div id="container" class="pre">Drop a Photoshop&reg; PSD file here</div>
+	<a href="https://github.com/epistemex/psd-reader">→ Download from GitHub</a>
+<script src="../dist/psd-reader.min.js"></script>
+<script>
+
+	  // Setup the dnd listeners.
+	  var dropZone = document.getElementById("container");
+
+	  dropZone.addEventListener('dragover', handleDragOver, false);
+	  dropZone.addEventListener('drop', handleFileSelect, false);
+
+	  function handleFileSelect(e) {
+		  e.stopPropagation();
+		  e.preventDefault();
+
+		  var file = e.dataTransfer.files[0],
+		      fr = new FileReader();
+
+		  fr.onload = function(e) {
+
+			  new PsdReader({
+				  buffer: e.target.result,
+				  onload: show,
+				  onerror: error,
+				  ignoreAlpha: false,
+				  duotone: [255, 255, 255]  // mix color for duotone formats
+			  });
+
+			  function show(e) {
+
+				  var img = this.toCanvas(),
+				      canvas = document.querySelector("canvas"),
+				      cont = document.getElementById("container"),
+				      ctx = canvas.getContext("2d"),
+					  w = window.innerWidth,
+					  h = window.innerHeight;
+
+				  cont.innerHTML = "";
+				  cont.className = "";
+
+				  canvas.width = w;
+				  canvas.height = h;
+				  ctx.fillRect(0, 0, w, h);
+
+				  ctx.setTransform(1,0,0,1,w * 0.5, h * 0.5);
+
+				  // fits the canvas?
+				  if (img.width < w && img.height < h) {
+					  ctx.translate(-img.width * 0.5, -img.height * 0.5);
+					  if (this.info.hasAlpha) checker(img.width, img.height);
+					  ctx.drawImage(img, 0, 0);
+				  }
+				  else {
+					  var fx = w / img.width,
+					      fy = h / img.height,
+					      r = Math.min(fx, fy),
+					      iw = img.width * r,
+					      ih = img.height * r;
+
+					  ctx.translate(-iw * 0.5, -ih * 0.5);
+					  if (this.info.hasAlpha) checker(iw, ih);
+					  ctx.drawImage(img, 0, 0, iw, ih);
+				  }
+
+				  // show some details
+				  var info = document.getElementById("info"),
+				      txt = "", i = this.info;
+
+				  add("<b>" + file.name + "</b>");
+				  add((file.size / 1024).toFixed(0) + " KB<br>");
+				  add("Size      : " + i.width + " x " + i.height);
+				  add("Colors    : " + i.colorDesc + "/" + i.depth + (i.indexes ? " (" + i.indexes + ")" : ""));
+				  add("Channels  : " + i.channels);
+				  add("Compressed: " + (i.compression ? "No" : "Yes (RLE)"));
+				  add("Parse time: " + e.elapsed.toFixed(2) + "ms");
+
+				  info.innerHTML = txt;
+				  info.style.display = "block";
+
+				  function add(t) {txt += t + "<br>"}
+
+				  // create checker pattern to show transparency
+				  function checker(w, h) {
+
+					  var cx = 16, cy = 16, x, y, toggle = false;
+
+					  ctx.save();
+					  ctx.beginPath();
+					  ctx.rect(0, 0, w, h);
+					  ctx.clip();
+					  ctx.beginPath();
+
+					  for(y = 0; y < h; y += cy) {
+						  for(x = toggle ? cx : 0; x < w; x += cx<<1) ctx.rect(x, y, cx, cy);
+						  toggle = !toggle;
+					  }
+
+					  ctx.fillStyle = "#0a0a0a";
+					  ctx.fill();
+					  ctx.restore();
+				  }
+			  }
+
+		  };
+
+		  fr.readAsArrayBuffer(file);
+
+		  function error(err) {
+			  alert(err.message)
+		  }
+	  }
+
+	  function handleDragOver(e) {
+		  e.stopPropagation();
+		  e.preventDefault();
+		  e.dataTransfer.dropEffect = 'copy';
+		  //return false;
+	  }
+
+</script>
+</body>
+</html>

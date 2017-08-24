@@ -1,0 +1,110 @@
+Change log for psd-reader
+-------------------------
+
+1.1.0
+CHG: bitmaps array is moved from instance.info.bitmaps to instance.bitmap. Please update code that makes use of this.
+CHG: resources array is moved from instance.info.resources to instance.resources. Please update code that makes use of this.
+CHG: Longer delay between blocks for very large PSD files
+
+1.0.3
+FIX: Internal non-critical argument cleanup
+
+1.0.2 HOTFIX
+FIX: Mix-up in RAW/RLE criteria after code reduction.
+
+1.0.1
+CHG: Minor changes to improve minifying
+FIX: Some docs typos
+
+1.0.0
+CHG: Bumped to version 1.0.0, and out of beta
+CHG: Optimized DuoTone converter
+
+0.7.1 BETA
+CHG: config property is now exposed and public. Changes can be made and used with toRGBA() to reconvert.
+CHG: toRGBA() will reconvert when called (reconverted only in passive mode)
+
+0.7.0 BETA
+ADD: Improved CMYK handling using K-component for adjustment (no replacement for ICC, but improves the result)
+CHG: IMPORTANT: noDematte option changed to dematte, default is true
+CHG: IMPORTANT: noRGBA option changed to toRGBA, default is true
+FIX: K-channel of CMYK accidentally used as alpha if none was present (in any case obsolete, replaced with separate CMYK handler)
+
+0.6.0 BETA
+ADD: Resource chunks parser and new property info.resources (+ parseResources(), findResource(id)).
+CHG: Internal changes, refactoring gamma processing
+
+0.5.3 BETA
+FIX: Cleaning up error handling in fetch method (private)
+
+0.5.2 BETA
+CHG: Prevent 32-bit depth images to be de-matted (currently an apparent rounding error problem exist with this mode)
+CHG: Indexed mode no longer sets hasAlpha in info object despite it has transparency, as there is no actual channel for alpha.
+
+0.5.1 BETA
+CHG: Prevent indexed images to be de-matted as they don't suffer from this problem.
+
+0.5.0 BETA
+ADD: De-matter - removes the halo in images with alpha channel.
+ADD: New option "noDematte"
+
+0.4.10 BETA
+CHG: Minor optimization with gamma LUT if gamma = 1 (for 32-bits mode)
+FIX: Event for toRGBA() did not link rgba bitmap correctly as reference inside event object
+
+0.4.9 BETA
+CHG: optimized bitmap decoder++
+CHG: Refactored rgb/grey
+FIX: ignoreAlpha was ignored for some color modes
+
+0.4.8 BETA
+ADD: New option: noRGBA with accompanying method toRGBA(). Loads and decompresses the data, but does not convert to RGBA.
+
+0.4.7 BETA
+ADD: Option to ignore alpha channel
+CHG: Optimized Lab conversion speed
+CHG: Lab range for ab increased to full signed byte
+
+0.4.6 BETA
+ADD: Check in toCanvas to prevent HQ mode to be used when target size is larger than original.
+CHG: Internal - merged util module into core
+CHG: Internal - separated out RGBA conversion, toRGBA is now "master" dispatcher.
+
+0.4.5 BETA
+FIX: L*ab colors now shows correctly
+CHG: Internal changes
+
+0.4.1 BETA
+REM: removing crossOrigin option (was a little too caught up in how CORS works with Image...).
+CHG: Internal changes/code trimming/optimizations/minimize tricks
+
+0.4.0 BETA
+ADD: Scaling option for toCanvas, with optional high-quality mode.
+ADD: Support of passive mode for options - load data but don't parse until new parse() method is invoked (use onReady event for urls)
+
+0.3.1 BETA
+FIX: A take on DuoTone. Reads in the data as grey (w/support for alpha) and uses new option "duotone" with RGB array color to mix it with.
+
+0.3.0 BETA
+ADD: Gamma support through two new options: "gamma" and "gamma32" (see docs)
+ADD: Added new property "indexes" for info object showing number of indexed colors
+FIX: Transparency for indexed color mode now supported (added resource scanner, not optimized, trigger only for indexed).
+CHG: Internal refactoring and optimizations
+
+0.2.1 BETA
+FIX: Global error handler wasn't set until after parser was invoked
+
+0.2.0 BETA
+CHG: !IMPORTANT: toCanvas() is now *synchronous returning the canvas element* instead of using a callback.
+IMP: Better error checking when creating canvas
+IMP: Minor internal improvements
+FIX: If error in fetch it would never be called properly
+FIX: Wrong error text with invalid data chunk/mode
+REM: Removed unused check block
+REM: Unused info properties
+
+0.1.0 BETA
+NEW: Initial release
+
+
+(c) Epistemex 2015-2017

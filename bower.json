@@ -1,0 +1,16 @@
+{
+  "name": "psd-reader",
+ "homepage": "https://github.com/epistemex/psd-reader",
+  "authors": [
+    "epistemex <github@epistemex.com>"
+  ],
+  "description": "Fast and light Photoshop® PSD file reader for JavaScript",
+  "main": "dist/psd-reader.min.js",
+  "keywords": [
+    "photoshop", "psd", "parser", "converter", "bitmap", "rgba"
+  ],
+  "license": "CC BY-NC-SA 4.0",
+  "ignore": [
+    "**/.*"
+  ]
+}

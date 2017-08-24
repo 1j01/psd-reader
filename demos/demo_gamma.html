@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>psd-reader gamma demo</title>
+	<style>
+		body {background:#555; color:#aaa; font:14px sans-serif}
+		.cont {
+			border:1px solid #999;background:#777;border-radius:4px;
+			width:180px;padding:7px 12px;display:inline-block;margin:0 2px
+			}
+		p {color:#ddd}
+	</style>
+</head>
+<body>
+
+<h1>Gamma can be set through options:</h1>
+
+<div id="cont">Loading files from server...</div>
+<br>
+
+<h1>Separate gamma setting for 32-bit mode:</h1>
+<h2>Auto-detects and auto-corrects - can be overridden with option.</h2>
+<div id="cont2"></div>
+
+<script src="../dist/psd-reader.min.js"></script>
+<script>
+
+	var cnt = 2, buffer8, buffer32,
+	    url8 = "gfx/epistemex_RGB8.psd",
+	    url32 = "gfx/epistemex_RGB32.psd";
+
+	load(url8, count);
+	load(url32, count);
+
+	function load(url, callback) {
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET", url);
+		xhr.responseType = "arraybuffer";
+		xhr.onerror = function() {console.error("Network error")};
+		xhr.onload = function() {
+			if (xhr.status === 200) callback({url: url, buffer: xhr.response});
+		};
+		xhr.send();
+	}
+
+	function count(e) {
+		if (e.url === url8) buffer8 = e.buffer;
+		else buffer32 = e.buffer;
+		if(!--cnt) showGamma()
+	}
+
+	function showGamma() {
+		document.getElementById("cont").innerHTML = "";
+
+		new PsdReader({buffer: buffer8, gamma: 1/0.8, onload: addTile});
+		new PsdReader({buffer: buffer8, gamma: 1, onload: addTile});
+		new PsdReader({buffer: buffer8, gamma: 1/1.2, onload: addTile});
+		new PsdReader({buffer: buffer8, gamma: 1/1.8, onload: addTile});
+		new PsdReader({buffer: buffer8, gamma: 1/2.2, onload: addTile});
+
+		new PsdReader({buffer: buffer32, gamma32: 1/0.8, onload: addTile32});
+		new PsdReader({buffer: buffer32, gamma32: 1, onload: addTile32});
+		new PsdReader({buffer: buffer32, gamma32: 1/1.2, onload: addTile32});
+		new PsdReader({buffer: buffer32, gamma32: 1/1.8, onload: addTile32});
+		new PsdReader({buffer: buffer32, gamma32: 1/2.2, onload: addTile32});
+
+		function addTile() {Tile("cont", this)}
+		function addTile32() {Tile("cont2", this, true)}
+	}
+
+	function Tile(id, psd, is32) {
+		var canvas = psd.toCanvas(),
+		    div = document.createElement("div"),
+		    p = document.createElement("p"),
+		    cont = document.getElementById(id),
+		    guess = (1/PsdReader.guessGamma()).toFixed(1),
+			gamma = (1/(is32 ? psd.config.gamma32 : psd.config.gamma)).toFixed(1);
+
+		p.innerHTML = "Gamma: " + gamma +
+			(gamma === "1.0" ? " (none)" : "") +
+			(gamma === guess && is32 ? " (guess)" : "");
+
+		div.className = "cont";
+
+		div.appendChild(p);
+		div.appendChild(canvas);
+		cont.appendChild(div);
+	}
+
+</script>
+</body>
+</html>
